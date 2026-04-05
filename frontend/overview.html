@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Overview | Vanderbilt Quantum Initiative</title>
+    <meta name="description" content="Learn about the Vanderbilt Quantum Initiative and Quantum Amplitude Estimation for Option Pricing.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .article-content {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--text-secondary);
+        }
+        .article-content h3 {
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            margin-top: 2.5rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+        .article-content p {
+            margin-bottom: 1.5rem;
+        }
+        .article-content strong {
+            color: var(--brand-primary);
+        }
+        .info-card {
+            background: rgba(0, 0, 0, 0.4);
+            border-left: 3px solid var(--brand-secondary);
+            padding: 1.5rem;
+            border-radius: 0 12px 12px 0;
+            margin: 2.5rem 0;
+        }
+        .info-card h4 {
+            color: #FFF;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .info-card h4 svg {
+            color: var(--brand-secondary);
+        }
+    </style>
+</head>
+<body>
+    <div class="background-effects">
+        <div class="glow-orb orb-1"></div>
+        <div class="glow-orb orb-2"></div>
+        <div class="grid-overlay"></div>
+    </div>
+
+    <nav class="navbar">
+        <div class="logo">
+            <span class="logo-mark"></span>
+            <div class="logo-text">
+                <h1>Vanderbilt Quantum Initiative</h1>
+                <span class="subtitle">Finance Team</span>
+            </div>
+        </div>
+        <div class="nav-links">
+            <a href="overview.html" class="active">Overview</a>
+            <a href="index.html">Pricing Model</a>
+        </div>
+    </nav>
+
+    <main class="container" style="max-width: 900px;">
+        <div style="text-align: center; margin-bottom: 4rem;">
+            <div class="badge">About the Project</div>
+            <h2 class="title" style="font-size: 3rem;">Pioneering Global Finance <br>with Quantum Computing</h2>
+        </div>
+
+        <div class="glass-panel article-content">
+            <p style="font-size: 1.25rem; color: #E2E8F0; margin-bottom: 2rem;">The Vanderbilt Quantum Initiative (VQI) represents a multidisciplinary approach to solving some of the world's most complex computational challenges. Within VQI, the <strong>Finance Team</strong> focuses strictly on where quantum algorithms intersect with capital markets—seeking distinct computational advantages in areas such as portfolio optimization, risk analysis, and derivative pricing.</p>
+            
+            <p>By translating theoretical physics into pragmatic financial models, we aim to bridge the gap between tomorrow's quantum hardware capabilities and today's institutional finance requirements.</p>
+
+            <div class="divider" style="margin: 3rem 0;"></div>
+
+            <h3>The Challenge of Option Pricing</h3>
+            <p>Classical option pricing primarily relies on the <strong>Monte Carlo simulation</strong>. While extremely versatile for modeling complex derivatives and stochastic processes (like the Black-Scholes-Merton model), Monte Carlo methods converge slowly. Specifically, they suffer from a convergence rate of <code>O(1/√N)</code>, meaning that to reduce the pricing error by a factor of 10, you must run 100 times as many simulations.</p>
+            
+            <p>For institutions pricing large books of complex exotic options in real-time, this computational bottleneck requires massive, energy-intensive classical computing clusters that still take hours to run overnight risk calculations.</p>
+
+            <div class="divider" style="margin: 3rem 0;"></div>
+
+            <h3>Quantum Amplitude Estimation (QAE)</h3>
+            <p><strong>Quantum Amplitude Estimation</strong> is a fundamental quantum algorithm that provides a solution to the Monte Carlo bottleneck. Instead of classically averaging random simulation paths, QAE takes an abstract classical function, loads it into a quantum state space, and estimates its expected amplitude value through quantum phase estimation and Grover's search operator.</p>
+
+            <div class="info-card">
+                <h4>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                    The Quadratic Speedup
+                </h4>
+                <p style="margin-bottom: 0px;">QAE achieves a convergence rate of roughly <code>O(1/N)</code>. This indicates a <strong>quadratic speedup</strong> over classical Monte Carlo. A risk calculation requiring 1,000,000 classical simulations to reach a specific accuracy would theoretically require only 1,000 quantum operations to achieve the exact same precision level.</p>
+            </div>
+
+            <h3>How We Apply It</h3>
+            <p>Our team utilizes IBM's <strong>QisKit</strong> framework to physically build the circuit architectures necessary for QAE in option pricing:</p>
+            <ul style="margin-left: 1.5rem; margin-bottom: 2rem; display: flex; flex-direction: column; gap: 0.8rem;">
+                <li><strong>Distribution Loading:</strong> We map the mathematical probability distribution of the underlying asset (such as the Log-Normal distribution for typical equities) directly into the superposition of the working qubits.</li>
+                <li><strong>Payoff Function Circuit:</strong> We construct specialized quantum comparators and controlled-Y rotations to calculate the option's specific payoff at maturity.</li>
+                <li><strong>Amplitude Estimation:</strong> We execute the QAE algorithm to measure the probability amplitude of the resulting target state, effectively extracting the expected theoretical price of the option without simulating infinite paths.</li>
+            </ul>
+
+            <p>By traversing to the <strong>Pricing Model</strong> tool on this platform, you can visually simulate initiating these exact QisKit circuits to witness the future of real-time, high-accuracy derivative pricing.</p>
+        </div>
+    </main>
+</body>
+</html>

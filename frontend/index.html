@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Option Pricing | VQI Finance</title>
+    <meta name="description"
+        content="Quantum amplitude estimation model for option pricing by Vanderbilt Quantum Initiative.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* CI row — hidden by default, shown for European/Asian results */
+        .ci-row {
+            display: none;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(0, 240, 255, 0.12);
+            border-radius: 12px;
+            padding: 1rem 1.2rem;
+            margin-top: 0.25rem;
+            margin-bottom: 1rem;
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+        }
+        .ci-row .ci-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.3rem;
+        }
+        .ci-row .ci-value {
+            color: var(--brand-primary);
+        }
+        /* Error banner */
+        .error-banner {
+            display: none;
+            background: rgba(255, 60, 60, 0.12);
+            border: 1px solid rgba(255, 60, 60, 0.3);
+            border-radius: 12px;
+            padding: 1rem 1.2rem;
+            color: #ff8080;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+        }
+        /* Subtle note under the run button */
+        .run-note {
+            text-align: center;
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+        }
+        /* Make metrics grid span 3 columns for the classical price card on american */
+        .metrics-grid.three-col {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="background-effects">
+        <div class="glow-orb orb-1"></div>
+        <div class="glow-orb orb-2"></div>
+        <div class="grid-overlay"></div>
+    </div>
+
+    <nav class="navbar">
+        <div class="logo">
+            <span class="logo-mark"></span>
+            <div class="logo-text">
+                <h1>Vanderbilt Quantum Initiative</h1>
+                <span class="subtitle">Finance Team</span>
+            </div>
+        </div>
+        <div class="nav-links">
+            <a href="overview.html">Overview</a>
+            <a href="index.html" class="active">Pricing Model</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <section class="hero-section">
+            <div class="hero-content">
+                <div class="badge">Powered by QisKit</div>
+                <h2 class="title">Quantum Amplitude <br>Estimation Model</h2>
+                <p class="description">
+                    Leverage quantum computing to evaluate option pricing with unprecedented precision. Enter the
+                    underlying asset details below to simulate our quantum amplitude estimation model.
+                </p>
+                <div class="features-list">
+                    <div class="feature-item">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                        </svg>
+                        <span>Real-time execution</span>
+                    </div>
+                    <div class="feature-item">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                        </svg>
+                        <span>Financial modeling precision</span>
+                    </div>
+                    <div class="feature-item">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="M12 16v-4" />
+                            <path d="M12 8h.01" />
+                        </svg>
+                        <span>High-accuracy simulation engine</span>
+                    </div>
+                </div>
+
+                <div class="explainer-card">
+                    <div class="explainer-title">What is being priced?</div>
+                    <p class="explainer-body">
+                        An <strong>equity option</strong> is a contract giving the holder the right — but not the
+                        obligation — to buy or sell shares of a stock at a fixed <strong>strike price</strong> on
+                        or before the <strong>expiration date</strong>. The engine computes the theoretical fair
+                        value of that contract using a CRR binomial tree and Quantum Amplitude Estimation.
+                    </p>
+                    <div class="explainer-options">
+                        <div class="explainer-option call">
+                            <span class="option-tag">Call</span>
+                            <span class="option-desc">Right to <em>buy</em> at the strike. Gains value as the stock price rises above the strike.</span>
+                        </div>
+                        <div class="explainer-option put">
+                            <span class="option-tag">Put</span>
+                            <span class="option-desc">Right to <em>sell</em> at the strike. Gains value as the stock price falls below the strike.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="interface-panel glass-panel">
+                <div class="panel-header">
+                    <h3>Configure Option</h3>
+                    <div class="status-indicator">
+                        <span class="dot"></span>
+                        <span class="status-text">QPU Idle</span>
+                    </div>
+                </div>
+
+                <form id="pricing-form" class="parameter-form">
+                    <!-- Ticker -->
+                    <div class="form-group">
+                        <label for="ticker">Underlying Ticker</label>
+                        <div class="ticker-input-row">
+                            <input type="text" id="ticker" name="ticker" placeholder="e.g., AAPL"
+                                autocomplete="off" style="text-transform:uppercase;">
+                            <button type="button" id="fetch-quote-btn" class="btn-fetch">Fetch</button>
+                        </div>
+                        <span class="ticker-status" id="ticker-status"></span>
+                    </div>
+
+                    <!-- Stock price + Strike -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="stockPrice">Stock Price ($)</label>
+                            <input type="number" id="stockPrice" name="stockPrice" placeholder="e.g., 100.00"
+                                step="0.01" min="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="strikePrice">Strike Price ($)</label>
+                            <input type="number" id="strikePrice" name="strikePrice" placeholder="e.g., 100.00"
+                                step="0.01" min="0.01" required>
+                        </div>
+                    </div>
+
+                    <!-- Expiration + Option type -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="expirationDate">Expiration Date</label>
+                            <input type="date" id="expirationDate" name="expirationDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="optionType">Call / Put</label>
+                            <select id="optionType" name="optionType">
+                                <option value="call">Call</option>
+                                <option value="put">Put</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Volatility + Risk-free rate -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="volatility">Volatility (%)</label>
+                            <input type="number" id="volatility" name="volatility" placeholder="e.g., 20"
+                                step="0.1" min="0.1" max="500" value="20" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="riskFreeRate">Risk-Free Rate (%)</label>
+                            <input type="number" id="riskFreeRate" name="riskFreeRate" placeholder="e.g., 5"
+                                step="0.01" value="5" required>
+                        </div>
+                    </div>
+
+                    <!-- Dividend -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="dividend">Dividend ($) <span style="color:var(--text-secondary);font-weight:400;">optional</span></label>
+                            <input type="number" id="dividend" name="dividend" placeholder="0.00"
+                                step="0.01" min="0" value="0">
+                        </div>
+                        <div class="form-group" id="exDivStepGroup" style="opacity:0.4;pointer-events:none;">
+                            <label for="exDivStep">Ex-Div Step</label>
+                            <input type="number" id="exDivStep" name="exDivStep" placeholder="4"
+                                step="1" min="1" value="4">
+                        </div>
+                    </div>
+
+                    <!-- Option style -->
+                    <div class="form-group">
+                        <label for="optionStyle">Pricing Method</label>
+                        <select id="optionStyle" name="optionStyle">
+                            <option value="european">European — Fully Quantum (QAE)</option>
+                            <option value="american">American — Classical Backward Induction</option>
+                            <option value="asian">Asian (Arithmetic Avg) — Hybrid QAE</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn-primary" id="submit-btn" aria-label="Run Quantum Simulation">
+                        <span class="btn-text">Execute Quantum Simulation</span>
+                        <div class="btn-loader"></div>
+                    </button>
+                    <p class="run-note" id="run-note">European &amp; Asian methods use QAE and may take 15–60 s.</p>
+                </form>
+
+                <!-- Error display -->
+                <div class="error-banner" id="error-banner"></div>
+
+                <div class="results-container" id="results-container" style="display: none;">
+                    <div class="divider"></div>
+                    <div class="results-header">
+                        <h4>Simulation Results</h4>
+                        <span class="confidence-badge" id="confidence-badge">95% Confidence Interval</span>
+                    </div>
+
+                    <div class="metrics-grid" id="metrics-grid">
+                        <!-- Primary price card -->
+                        <div class="metric-card">
+                            <span class="metric-label" id="label-primary">Estimated Theo Value</span>
+                            <span class="metric-value highlight" id="result-primary">---</span>
+                        </div>
+                        <!-- Classical price card -->
+                        <div class="metric-card">
+                            <span class="metric-label" id="label-classical">Classical Price</span>
+                            <span class="metric-value" id="result-classical">---</span>
+                        </div>
+                        <!-- Qubits card -->
+                        <div class="metric-card">
+                            <span class="metric-label">Qubits Utilized</span>
+                            <span class="metric-value" id="result-qubits">---</span>
+                        </div>
+                        <!-- Execution time card -->
+                        <div class="metric-card">
+                            <span class="metric-label">Execution Time</span>
+                            <span class="metric-value" id="result-time">---</span>
+                        </div>
+                    </div>
+
+                    <!-- Confidence interval row (QAE methods only) -->
+                    <div class="ci-row" id="ci-row">
+                        <div class="ci-label">95% Confidence Interval (QAE Price)</div>
+                        <span class="ci-value" id="result-ci">---</span>
+                    </div>
+
+                    <div class="terminal-window">
+                        <div class="terminal-header">
+                            <span class="mac-btn close"></span>
+                            <span class="mac-btn minimize"></span>
+                            <span class="mac-btn expand"></span>
+                            <span class="terminal-title">qiskit_runtime.log</span>
+                        </div>
+                        <div class="terminal-content" id="terminal-content">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
