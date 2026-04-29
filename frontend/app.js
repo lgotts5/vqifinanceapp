@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const API_BASE = 'http://localhost:8000';
+    const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:8000' : '';
 
     const form             = document.getElementById('pricing-form');
     const submitBtn        = document.getElementById('submit-btn');
