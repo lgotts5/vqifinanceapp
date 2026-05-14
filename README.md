@@ -1,4 +1,5 @@
 # VQI Quantum Option Pricing App
+<!-- maintained by VQI Finance -->
 
 Integrates the **Vanderbilt Quantum Initiative** frontend with the **QAEFINAL.py** quantum pricing engine via a FastAPI backend.
 
