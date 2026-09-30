@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:8000' : '';
+    const API_BASE = '';  // FastAPI serves this page, so the API is always same-origin
 
     const form             = document.getElementById('pricing-form');
     const submitBtn        = document.getElementById('submit-btn');
@@ -18,6 +18,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const ciRow         = document.getElementById('ci-row');
     const labelPrimary  = document.getElementById('label-primary');
     const labelClass    = document.getElementById('label-classical');
+
+    // FastAPI returns `detail` as a string, or a list of {loc, msg} for validation errors
+    const errorMessage = async (resp) => {
+        const err = await resp.json().catch(() => ({ detail: resp.statusText }));
+        const d = err.detail;
+        if (Array.isArray(d)) return d.map(e => `${(e.loc || []).slice(-1)[0]}: ${e.msg}`).join('; ');
+        return d || `Server error ${resp.status}`;
+    };
 
     // ── Ticker quote fetch ────────────────────────────────────
     const fetchQuoteBtn  = document.getElementById('fetch-quote-btn');
@@ -39,10 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const resp = await fetch(`${API_BASE}/api/quote/${encodeURIComponent(ticker)}`);
-            if (!resp.ok) {
-                const err = await resp.json().catch(() => ({ detail: resp.statusText }));
-                throw new Error(err.detail || `Error ${resp.status}`);
-            }
+            if (!resp.ok) throw new Error(await errorMessage(resp));
             const data = await resp.json();
 
             const priceEl = document.getElementById('stockPrice');
@@ -105,7 +110,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const now = new Date();
         const ts  = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}.${String(now.getMilliseconds()).padStart(3,'0')}`;
         const cls = type === 'success' ? 'log-success' : type === 'warn' ? 'log-warn' : 'log-info';
-        line.innerHTML = `<span class="log-time">[${ts}]</span> <span class="${cls}">${msg}</span>`;
+        const tsSpan  = document.createElement('span');
+        tsSpan.className = 'log-time';
+        tsSpan.textContent = `[${ts}]`;
+        const msgSpan = document.createElement('span');
+        msgSpan.className = cls;
+        msgSpan.textContent = msg;
+        line.append(tsSpan, ' ', msgSpan);
         terminalContent.appendChild(line);
         terminalContent.scrollTop = terminalContent.scrollHeight;
     };
@@ -123,7 +134,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // ── Compute T (years to expiry) ───────────────────────────
     const calcT = (dateStr) => {
         const today  = new Date();
-        const expiry = new Date(dateStr);
+        const [y, m, d] = dateStr.split('-').map(Number);
+        const expiry = new Date(y, m - 1, d, 16, 0, 0);  // 4pm local, market close
         const msPerYear = 365.25 * 24 * 60 * 60 * 1000;
         return (expiry - today) / msPerYear;
     };
@@ -197,10 +209,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }),
             });
 
-            if (!resp.ok) {
-                const err = await resp.json().catch(() => ({ detail: resp.statusText }));
-                throw new Error(err.detail || `Server error ${resp.status}`);
-            }
+            if (!resp.ok) throw new Error(await errorMessage(resp));
 
             data = await resp.json();
         } catch (err) {

@@ -1,4 +1,5 @@
 # VQI Quantum Option Pricing App
+<!-- maintained by VQI Finance -->
 
 Integrates the **Vanderbilt Quantum Initiative** frontend with the **QAEFINAL.py** quantum pricing engine via a FastAPI backend.
 
@@ -27,7 +28,7 @@ vqi-finance-app/
 ### 1. Create and activate a virtual environment
 
 ```bash
-cd ~/Desktop/vqi-finance-app
+cd ~/Desktop/Work/vqi-finance-app
 python3 -m venv .venv
 source .venv/bin/activate
 ```

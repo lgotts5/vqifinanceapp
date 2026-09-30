@@ -19,6 +19,8 @@ from pathlib import Path
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 # Make sure QAEFINAL is importable from this directory
@@ -40,8 +42,8 @@ app.add_middleware(
 #  REQUEST / RESPONSE MODELS
 # ─────────────────────────────────────────────────────────────
 class PriceRequest(BaseModel):
-    option_style: str = Field(..., description="european, american, or asian")
-    option_type:  str = Field(..., description="call or put")
+    option_style: Literal["european", "american", "asian"]
+    option_type:  Literal["call", "put"]
     S:   float = Field(..., gt=0,          description="Stock price ($)")
     K:   float = Field(..., gt=0,          description="Strike price ($)")
     vol: float = Field(..., gt=0, le=5.0,  description="Annualized volatility (e.g. 0.2 = 20%)")
@@ -61,11 +63,8 @@ def price_option(req: PriceRequest):
     European and Asian use QAE; American uses classical backward induction.
     NOTE: European QAE may take 15–60 seconds on a laptop due to simulation overhead.
     """
-    style = req.option_style.lower().strip()
-    call  = req.option_type.lower().strip() == "call"
-
-    if style not in {"european", "american", "asian"}:
-        raise HTTPException(status_code=400, detail=f"Unknown option_style '{style}'. Use european, american, or asian.")
+    style = req.option_style
+    call  = req.option_type == "call"
 
     start = time.time()
     try:
@@ -107,11 +106,16 @@ def get_quote(ticker: str):
     except ImportError:
         raise HTTPException(status_code=500, detail="yfinance not installed. Run: pip install yfinance")
 
-    t = yf.Ticker(ticker.upper())
+    # Yahoo uses '-' for share classes (BRK.B -> BRK-B)
+    symbol = ticker.strip().upper().replace(".", "-")
+    t = yf.Ticker(symbol)
 
-    hist = t.history(period="30d")
+    try:
+        hist = t.history(period="30d")
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"Could not reach Yahoo Finance: {exc}")
     if hist.empty:
-        raise HTTPException(status_code=404, detail=f"No data found for ticker '{ticker.upper()}'. Check the symbol and try again.")
+        raise HTTPException(status_code=404, detail=f"No data found for ticker '{symbol}'. Check the symbol and try again.")
 
     # Current price: last closing price
     price = round(float(hist["Close"].iloc[-1]), 2)
@@ -120,11 +124,14 @@ def get_quote(ticker: str):
     log_returns = np.log(hist["Close"] / hist["Close"].shift(1)).dropna()
     vol = round(float(log_returns.std() * np.sqrt(252)), 4)   # annualised, as decimal
 
-    # Company name (best-effort)
-    info = t.info
-    name = info.get("shortName") or info.get("longName") or ticker.upper()
+    # Company name (best-effort — t.info is often rate-limited)
+    try:
+        info = t.info or {}
+        name = info.get("shortName") or info.get("longName") or symbol
+    except Exception:
+        name = symbol
 
-    return {"ticker": ticker.upper(), "name": name, "price": price, "volatility": vol}
+    return {"ticker": symbol, "name": name, "price": price, "volatility": vol}
 
 
 # ─────────────────────────────────────────────────────────────

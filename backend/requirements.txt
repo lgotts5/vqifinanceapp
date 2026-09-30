@@ -4,4 +4,4 @@ numpy>=1.24.0
 qiskit>=0.44.0
 qiskit-algorithms>=0.2.0
 qiskit-aer>=0.12.0
-yfinance>=0.2.0
+yfinance>=0.2.54
