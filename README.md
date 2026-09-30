@@ -28,7 +28,7 @@ vqi-finance-app/
 ### 1. Create and activate a virtual environment
 
 ```bash
-cd ~/Desktop/vqi-finance-app
+cd ~/Desktop/Work/vqi-finance-app
 python3 -m venv .venv
 source .venv/bin/activate
 ```

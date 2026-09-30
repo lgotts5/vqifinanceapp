@@ -27,13 +27,32 @@ from qiskit.circuit.library import StatePreparation
 def _stock_price(S0, u, d, dt, step, j, D, r, ex_div_step):
     """
     Returns the stock price at node (step, j) adjusted for a discrete
-    cash dividend D paid at ex_div_step. If D=0 returns standard CRR price.
+    cash dividend D paid at ex_div_step (escrowed-dividend model).
+    The tree is built on S0 minus PV(D); before the ex-div date the PV
+    of the remaining dividend is added back. If D=0 returns standard CRR price.
     """
-    raw = S0 * (u ** j) * (d ** (step - j))
-    if D > 0 and step < ex_div_step:
-        pv_div = D * np.exp(-r * (ex_div_step - step) * dt)
-        raw    = raw - pv_div
+    if D <= 0:
+        return S0 * (u ** j) * (d ** (step - j))
+    s_star = S0 - D * np.exp(-r * ex_div_step * dt)
+    raw    = s_star * (u ** j) * (d ** (step - j))
+    if step < ex_div_step:
+        raw += D * np.exp(-r * (ex_div_step - step) * dt)
     return raw
+
+
+def _otm_result(style, call, classical_price, logs):
+    """Result when every terminal payoff is 0 — option is worth $0, QAE is skipped."""
+    logs.append("All payoffs are 0 — option is entirely out of the money. Price = $0.")
+    return {
+        "option_style": style,
+        "option_type":  "call" if call else "put",
+        "classical_price":     round(classical_price, 4),
+        "qae_price":           0.0,
+        "qae_amplitude":       0.0,
+        "confidence_interval": [0.0, 0.0],
+        "circuit":             None,
+        "logs":                logs,
+    }
 
 
 # ─────────────────────────────────────────────────────────────
@@ -104,6 +123,9 @@ def price_european(S, K, vol, r, T, call,
 
     payoff_vals     = np.maximum(0.0, S_T - K) if call else np.maximum(0.0, K - S_T)
     classical_price = discount * float(np.dot(probs, payoff_vals))
+
+    if payoff_vals.max() <= 0:
+        return _otm_result("european", call, classical_price, logs)
 
     logs.append(f"Running QAE for {label}...")
     a_hat, ci, max_payoff, circuit = _run_qae(probs, payoff_vals, epsilon, alpha, logs)
@@ -239,6 +261,9 @@ def price_asian(S, K, vol, r, T, call,
     classical_price  = discount * classical_payoff
 
     logs.append(f"Classical Asian price ({n_steps}-step tree): ${classical_price:.4f}")
+    if path_payoffs.max() <= 0:
+        return _otm_result("asian", call, classical_price, logs)
+
     logs.append(f"Running QAE for {label}...")
     a_hat, ci, max_payoff, circuit = _run_qae(path_probs, path_payoffs, epsilon, alpha, logs)
 
